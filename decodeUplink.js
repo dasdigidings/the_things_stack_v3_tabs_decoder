@@ -65,25 +65,38 @@ function decodeUplink(input) {
         data.roomStatusTime = roomStatusTime;
         data.roomStatusCount = roomStatusCount;
         data.roomStatusOccupied = roomStatusOccupied;
-    } else if (input.fPort === 103) { // Healthy Home Sensor IAQ
-        // VOC Measurement
-        voc = (input.bytes[7] << 8) | input.bytes[6];
-        if (voc === 65535) {
-            vocError = true;
-        } else {
-            vocError = false;
-        }
+    } else if (input.fPort === 103) { // Healthy Home Sensor IAQ & Temperature & Humidity Sensor
+        if (input.bytes.length > 8) { // Healthy Home Sensor IAQ
+            // VOC Measurement
+            voc = (input.bytes[7] << 8) | input.bytes[6];
+            if (voc === 65535) {
+                vocError = true;
+            } else {
+                vocError = false;
+            }
 
-        // CO2 Measurement
-        co2 = (input.bytes[5] << 8) | input.bytes[4];
-        if (co2 === 65535) {
-            co2Error = true;
-        } else {
-            co2Error = false;
-        }
+            // CO2 Measurement
+            co2 = (input.bytes[5] << 8) | input.bytes[4];
+            if (co2 === 65535) {
+                co2Error = true;
+            } else {
+                co2Error = false;
+            }
 
-        // IAQ Measurement
-        iaq = (input.bytes[9] << 9) | input.bytes[8];
+            // IAQ Measurement
+            iaq = (input.bytes[9] << 9) | input.bytes[8];
+
+            // Environment temperature measurement
+            temperatureEnvironment = input.bytes[10] & 0x7f;
+            temperatureEnvironment = temperatureEnvironment - 32;
+            
+            data.voc = voc;
+            data.vocError = vocError;
+            data.co2 = co2;
+            data.co2Error = co2Error;
+            data.iaq = iaq;
+            data.temperatureEnvironment = temperatureEnvironment;
+        }
 
         // Humidity Measurement
         humidity = input.bytes[3] &= 0x7f;
@@ -93,18 +106,8 @@ function decodeUplink(input) {
             humidityError = false;
         }
 
-        // Environment temperature measurement
-        temperatureEnvironment = input.bytes[10] & 0x7f;
-        temperatureEnvironment = temperatureEnvironment - 32;
-
-        data.voc = voc;
-        data.vocError = vocError;
-        data.co2 = co2;
-        data.co2Error = co2Error;
-        data.iaq = iaq;
         data.humidity = humidity;
         data.humidityError = humidityError;
-        data.temperatureEnvironment = temperatureEnvironment;
     } else if (input.fPort === 104) { // Ambient Light Sensor
         // Lux measurement
         lux = ((input.bytes[5] << 16) | (input.bytes[4] << 8)) | input.bytes[3];
