@@ -151,7 +151,7 @@ function decodeUplink(input) {
 
         // Accuracy Measurement
         positionAccuracy = input.bytes[10] >> 5;
-        positionAccuracy = Math.pow(2, parseInt(acc) + 2);
+        positionAccuracy = Math.pow(2, parseInt(positionAccuracy) + 2);
 
         // Mask off end of accuracy byte, so longitude doesn't get affected
         input.bytes[10] &= 0x1f;
