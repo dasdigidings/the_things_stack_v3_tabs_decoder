@@ -23,7 +23,7 @@ You can now integrate all the differnt tabs sensors (listed above) and the decod
 
 ### how to reboot the device remotely
 You can reboot them remotely by sending the following:  
-Send an **unconfirmed** downlink with payload **038000000100** (hex bytes) on port **222** via the ttn-console. Obviously this will not reboot the node immediately, the download command is scheduled just after the next uplink of the device, which typically happens all six hours (of note triggered before manually from any action). 
+Send an **unconfirmed** downlink with payload **038000000100** (hex bytes) on port **222** via the ttn-console. Obviously this will not reboot the node immediately, the download command is scheduled just after the next uplink of the device, which typically happens all six hours (if node is not triggered before manually from any action). 
 
 
 This decoder is licensed by the AGPL-3.0 License, please have a look at the LICENSE file.
