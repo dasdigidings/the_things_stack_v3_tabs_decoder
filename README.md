@@ -2,6 +2,8 @@
 # The Things Stack V3 tabs decoder
 Decoder in javascript for the family of tabs sensors for the things stack v3
 
+## Since the version 3.13.0 from The Things Stack V3 the payload decoder size is capped at 4k (via webinterface), so please use the minified version decodeUplink.min.js - its the same software just run through [Link to Javascript Minifier](https://javascript-minifier.com/).
+
 ### The differnt tabs sensors supported by this javascript decoder:
 - Door & Window Sensor (TBDW - [Link to BROWAN Productpage](https://www.browan.com/product/door-window-sensor/detail))
 - Motion Sensor (PIR) (TBMS - [Link to BROWAN Productpage](https://www.browan.com/product/motion-sensor-pir/detail))
