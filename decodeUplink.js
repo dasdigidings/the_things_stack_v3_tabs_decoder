@@ -126,6 +126,14 @@ function decodeUplink(input) {
         data.soundLevel = soundLevel;
         data.soundLevelError = soundLevelError;
     } else if (input.fPort === 106) { // Water Leak Sensor
+        // water leakage status bit
+        waterLeakageBit = input.bytes[0] & 0x01;
+        if (waterLeakageBit === 1) {
+            waterLeakage = true;
+        } else {
+            waterLeakage = false;
+        }
+        
         // Environment temperature measurement
         temperatureEnvironment = input.bytes[4] & 0x7f;
         temperatureEnvironment = temperatureEnvironment - 32;
@@ -138,6 +146,7 @@ function decodeUplink(input) {
             humidityError = false;
         }
 
+        data.waterLeakage = waterLeakage;
         data.temperatureEnvironment = temperatureEnvironment;
         data.humidity = humidity;
         data.humidityError = humidityError;
