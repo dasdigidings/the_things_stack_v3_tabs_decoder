@@ -1,11 +1,3 @@
-/* Decoder in javascript for the family of tabs sensors from BROWAN for The Things Stack V3
- *
- * GNU Affero General Public License v3.0 - look into the LICENSE file please
- *
- * Created by Caspar Armster (dasdigidings e.V. / The Things Network Rhein-Sieg) - www.dasdigidings.de
- * This function is based on the work from Cameron Sharp at Sensational Systems - cameron@sensational.systems
- */
-
 function decodeUplink(input) {
     // create the object to collect the data for returning the decoded payload
     var data = {
@@ -151,6 +143,11 @@ function decodeUplink(input) {
         data.humidity = humidity;
         data.humidityError = humidityError;
     } else if (input.fPort === 136) { // Object Locator
+        if ((input.bytes[0] & 0x1) === 0) {
+            button = true;
+        } else {
+            button = false;
+        }
         // GNSS Fix?
         if ((input.bytes[0] & 0x8) === 0) {
             positionGnssFix = true;
@@ -178,6 +175,7 @@ function decodeUplink(input) {
         positionLatitude = positionLatitude / 1000000;
         positionLongitude = positionLongitude / 1000000;
 
+        data.button = button;
         data.positionGnssFix = positionGnssFix;
         data.positionLatitude = positionLatitude;
         data.positionLongitude = positionLongitude;
