@@ -12,20 +12,34 @@ function decodeUplink(input) {
         "bytes": input.bytes, // original payload
         "port" : input.fPort  // lorawan port
     };
+    var batteryStatus = input.bytes[1];
 
     // Every device transmits the battery status and the temperature
     // Battery measurement
-    battery = input.bytes[1] & 0x0f;
-    battery = (25 + battery) / 10;
-    capacity = input.bytes[1] >> 4;
-    capacity = (capacity / 15) * 100;
+    switch(batteryStatus){
+        case 0:
+            // Device is charging or line powered.
+            data.charging = true;
+            data.batteryFault = false;
+            break;
+        case 255:
+            // Device could not measure battery — possible Fault
+            data.batteryFault = true;
+            break;
+        default:
+            data.charging = false;
+            data.batteryFault = false;
+            battery = input.bytes[1] & 0x0f;
+            battery = (25 + battery) / 10;
+            data.battery = battery;
+            capacity = input.bytes[1] >> 4;
+            capacity = (capacity / 15) * 100;
+            data.capacity = capacity;
+    }
 
     // Temperature measurement
     temperature = input.bytes[2] & 0x7f;
     temperature = temperature - 32;
-
-    data.battery = battery;
-    data.capacity = capacity;
     data.temperature = temperature;
 
     // depending on the lorawan port we know which tabs sensor is delivering the data
@@ -157,6 +171,9 @@ function decodeUplink(input) {
         } else {
             positionGnssFix = false;
         }
+        data.gnssOk = (bytes[0] & 0x16) === 0;
+        data.moving = (bytes[0] & 0x2) !== 0;
+        data.buttonPressed = (bytes[0] & 0x1) === 1;
 
         // Accuracy Measurement
         positionAccuracy = input.bytes[10] >> 5;
