@@ -42,7 +42,9 @@ function decodeUplink(input) {
     temperature = input.bytes[2] & 0x7f;
     temperature = temperature - 32;
     data.temperature = temperature;
-if (input.fPort === 100) { // Door & Window Sensor
+
+    // depending on the lorawan port we know which tabs sensor is delivering the data
+    if (input.fPort === 100) { // Door & Window Sensor
         // Time measurement
         openingStatusTime = (input.bytes[4] << 8) | input.bytes[3];
 
@@ -60,8 +62,111 @@ if (input.fPort === 100) { // Door & Window Sensor
         data.openingStatusTime = openingStatusTime;
         data.openingStatusCount = openingStatusCount;
         data.openingStatusOpen = openingStatusOpen;
-    }
-     else if (input.fPort === 136) { // Object Locator
+    } else if (input.fPort === 102) { // Motion Sensor (PIR)
+        // Time measurement
+        roomStatusTime = (input.bytes[4] << 8) | input.bytes[3];
+    
+        // Count measurement
+        roomStatusCount = ((input.bytes[7] << 16) | (input.bytes[6] << 8)) | input.bytes[5];
+    
+        // Status measurement
+        roomStatus = input.bytes[0] & 0x1;
+        if (roomStatus === 1) {
+            roomStatusOccupied = true;
+        } else {
+            roomStatusOccupied = false;
+        }
+    
+        data.roomStatusTime = roomStatusTime;
+        data.roomStatusCount = roomStatusCount;
+        data.roomStatusOccupied = roomStatusOccupied;
+    } else if (input.fPort === 103) { // Healthy Home Sensor IAQ & Temperature & Humidity Sensor
+        if (input.bytes.length > 8) { // Healthy Home Sensor IAQ
+            // VOC Measurement
+            voc = (input.bytes[7] << 8) | input.bytes[6];
+            if (voc === 65535) {
+                vocError = true;
+            } else {
+                vocError = false;
+            }
+
+            // CO2 Measurement
+            co2 = (input.bytes[5] << 8) | input.bytes[4];
+            if (co2 === 65535) {
+                co2Error = true;
+            } else {
+                co2Error = false;
+            }
+
+            // IAQ Measurement
+            iaq = (input.bytes[9] << 9) | input.bytes[8];
+
+            // Environment temperature measurement
+            temperatureEnvironment = input.bytes[10] & 0x7f;
+            temperatureEnvironment = temperatureEnvironment - 32;
+            
+            data.voc = voc;
+            data.vocError = vocError;
+            data.co2 = co2;
+            data.co2Error = co2Error;
+            data.iaq = iaq;
+            data.temperatureEnvironment = temperatureEnvironment;
+        }
+
+        // Humidity Measurement
+        humidity = input.bytes[3] &= 0x7f;
+        if (humidity === 127) {
+            humidityError = true;
+        } else {
+            humidityError = false;
+        }
+
+        data.humidity = humidity;
+        data.humidityError = humidityError;
+    } else if (input.fPort === 104) { // Ambient Light Sensor
+        // Lux measurement
+        lux = ((input.bytes[5] << 16) | (input.bytes[4] << 8)) | input.bytes[3];
+        lux = lux / 100;
+
+        data.lux = lux;
+    } else if (input.fPort === 105) { // Sound Level Sensor
+        // Sound Level measurement
+        soundLevel = input.bytes[3] & 0xff;
+        if (soundLevel === 255) {
+            soundLevelError = true;
+        } else {
+            soundLevelError = false;
+        }
+
+        data.soundLevel = soundLevel;
+        data.soundLevelError = soundLevelError;
+    } else if (input.fPort === 106) { // Water Leak Sensor
+        // water leakage status bit
+        waterLeakageBit = input.bytes[0] & 0x01;
+        if (waterLeakageBit === 1) {
+            waterLeakage = true;
+        } else {
+            waterLeakage = false;
+        }
+        
+        // Environment temperature measurement
+        temperatureEnvironment = input.bytes[4] & 0x7f;
+        temperatureEnvironment = temperatureEnvironment - 32;
+
+        // Humidity Measurement
+        humidity = input.bytes[3] &= 0x7f;
+        if (humidity === 127) {
+            humidityError = true;
+        } else {
+            humidityError = false;
+        }
+
+        data.waterLeakage = waterLeakage;
+        data.temperatureEnvironment = temperatureEnvironment;
+        data.humidity = humidity;
+        data.humidityError = humidityError;
+        
+    } else if (input.fPort === 136) { // Object Locator
         // GNSS Fix?
         if ((input.bytes[0] & 0x8) === 0) {
             positionGnssFix = true;
